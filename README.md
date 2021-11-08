@@ -8,6 +8,6 @@ Tehnologies used to build the game:
 HTML,
 CSS,
 JS,
-ReactJS
+ReactJSn
 
 To start app use npm start command in terminal. React app is run on http://localhost:3000

@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import "./App.css";
-
+import Header from "./components/Header";
 const App = () => {
   const [randomNumber, setRandomNumber] = useState(
     Math.ceil(Math.random() * 100)
   );
-  const [answerNumber, setAnswerNumber] = useState("");
+
+  const [enteredNumber, setEnteredNumber] = useState("");
+  const [enteredNumberTouched, setEnteredNumberTouched] = useState(false);
   const [attempts, setAttempts] = useState(10);
   const [prevAnswer, setPrevAnswer] = useState([]);
   const [messageAlert, setMessageAlert] = useState("");
@@ -14,59 +16,67 @@ const App = () => {
   const [styleClass, setStyleClass] = useState("");
   const [isdisable, setIsdisable] = useState(false);
 
-  console.log(randomNumber);
+  const enteredNumberIsValid = enteredNumber.trim() !== "";
+  const numberInputIsInvalid = !enteredNumberIsValid && enteredNumberTouched;
+  const wrongNumber = Number(enteredNumber) < 1 || Number(enteredNumber) > 100;
+  const sameNumber =
+    !prevAnswer.length === 0 || prevAnswer.includes(enteredNumber);
 
-  const submit = (event) => {
-    event.preventDefault();
-
-    if (answerNumber.trim() !== "") {
-      if (!prevAnswer.length === 0 || prevAnswer.includes(answerNumber)) {
-        return alert("You have already entered this number! Try again!");
-      } else {
-        if (attempts !== 1) {
-          if (Number(answerNumber) === randomNumber) {
-            setMessageAlert("Congratulations! You got it right!");
-            setStyleClass("bg-success");
-            setIsStart(true);
-            setIsOver(true);
-            setIsdisable(true);
-            setAnswerNumber("");
-          } else if (answerNumber > randomNumber) {
-            setMessageAlert("PS! The last guess was too high!");
-            setStyleClass("bg-denger");
-            setAttempts(attempts - 1);
-            setIsStart(true);
-          } else if (answerNumber < randomNumber) {
-            setMessageAlert("UPS! The last guess was too low");
-            setStyleClass("bg-info");
-            setAttempts(attempts - 1);
-            setIsStart(true);
-          }
-        } else {
-          setIsOver(true);
-          setMessageAlert("GAME OVER!");
-          setStyleClass("bg-warning");
-          setIsStart(true);
-          setPrevAnswer([]);
-          setIsdisable(true);
-        }
-      }
-      setPrevAnswer([...prevAnswer, answerNumber]);
-      setAnswerNumber("");
-    }
+  const numberChangeHandler = (e) => {
+    setEnteredNumber(e.target.value);
   };
 
-  function handleChange(e) {
-    e.preventDefault();
-    const re = /^[0-9\b]+$/;
-    if (e.target.value === "" || re.test(e.target.value)) {
-      setAnswerNumber(e.target.value);
+  const inputBlurHandler = (e) => {
+    setEnteredNumberTouched(true);
+  };
 
-      console.log(e.target.value);
-    } else {
-      alert("please check your phone number");
+  const numberSubmitHandler = (e) => {
+    e.preventDefault();
+
+    setEnteredNumberTouched(true);
+
+    if (!enteredNumberIsValid) {
+      return;
     }
-  }
+    if (wrongNumber) {
+      return;
+    }
+    if (wrongNumber) {
+      return;
+    }
+
+    if (attempts !== 1) {
+      if (Number(enteredNumber) === randomNumber) {
+        setMessageAlert("Congratulations! You got it right!");
+        setStyleClass("bg-success");
+        setIsStart(true);
+        setIsOver(true);
+        setIsdisable(true);
+        setEnteredNumber("");
+      } else if (enteredNumber > randomNumber) {
+        setMessageAlert("PS! The last guess was too high!");
+        setStyleClass("bg-denger");
+        setAttempts(attempts - 1);
+        setIsStart(true);
+      } else if (enteredNumber < randomNumber) {
+        setMessageAlert("UPS! The last guess was too low");
+        setStyleClass("bg-info");
+        setAttempts(attempts - 1);
+        setIsStart(true);
+      }
+    } else {
+      setAttempts(0);
+      setIsOver(true);
+      setMessageAlert("GAME OVER!");
+      setStyleClass("bg-warning");
+      setIsStart(true);
+      setPrevAnswer([]);
+      setIsdisable(true);
+    }
+    setPrevAnswer([...prevAnswer, enteredNumber]);
+    setEnteredNumber("");
+    setEnteredNumberTouched(false);
+  };
 
   function startNewGame() {
     setRandomNumber(Math.ceil(Math.random() * 100));
@@ -76,7 +86,7 @@ const App = () => {
     setIsStart(false);
     setIsOver(false);
     setIsdisable(false);
-    setAnswerNumber("");
+    setEnteredNumber("");
     setMessageAlert("");
   }
 
@@ -86,23 +96,41 @@ const App = () => {
       setPrevAnswer([]);
       setStyleClass("");
       setMessageAlert("");
-      setAnswerNumber("");
+      setEnteredNumber("");
     }
   }
 
   function clear() {
-    setAnswerNumber("");
+    setEnteredNumber("");
   }
 
   return (
-    <div>
-      <h1>Number Guessing Game</h1>
-      <div className="container">
-        <form onSubmit={submit}>
-          <label htmlFor="number">Enter a number</label>
-          <input type="number" onChange={handleChange} value={answerNumber} />
+    <div className="container">
+      <Header />
+      <div>
+        <form onSubmit={numberSubmitHandler}>
+          <div>
+            <label htmlFor="number">Enter a number</label>
+            {wrongNumber && <p>Guess a number inside the range 1-100</p>}
+            <input
+              type="number"
+              onChange={numberChangeHandler}
+              onBlur={inputBlurHandler}
+              value={enteredNumber}
+              maxLength="3"
+            />
+            {numberInputIsInvalid && <p>Form must not be empty!</p>}
+            {sameNumber && (
+              <p>You have already entered this number! Try again!</p>
+            )}
+          </div>
         </form>
-        <button className="btn-big" onClick={submit} disabled={isdisable}>
+
+        <button
+          className="btn-big"
+          onClick={numberSubmitHandler}
+          disabled={isdisable}
+        >
           Submit number
         </button>
         <button className="btn-small" onClick={clear}>
