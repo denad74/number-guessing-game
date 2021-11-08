@@ -5,6 +5,7 @@ const App = () => {
   const [randomNumber, setRandomNumber] = useState(
     Math.ceil(Math.random() * 100)
   );
+  let inputNumber = "";
 
   const [enteredNumber, setEnteredNumber] = useState("");
   const [enteredNumberTouched, setEnteredNumberTouched] = useState(false);
@@ -15,15 +16,23 @@ const App = () => {
   const [isOver, setIsOver] = useState(false);
   const [styleClass, setStyleClass] = useState("");
   const [isdisable, setIsdisable] = useState(false);
+  const [wrongNumber, setWrongNumber] = useState("");
 
   const enteredNumberIsValid = enteredNumber.trim() !== "";
   const numberInputIsInvalid = !enteredNumberIsValid && enteredNumberTouched;
-  const wrongNumber = Number(enteredNumber) < 1 || Number(enteredNumber) > 100;
+
   const sameNumber =
     !prevAnswer.length === 0 || prevAnswer.includes(enteredNumber);
 
   const numberChangeHandler = (e) => {
-    setEnteredNumber(e.target.value);
+    inputNumber = e.target.value;
+
+    if (inputNumber < 1 || inputNumber > 100) {
+      setWrongNumber("Guess a number inside the range 1-100");
+    } else {
+      setEnteredNumber(inputNumber);
+      setWrongNumber("");
+    }
   };
 
   const inputBlurHandler = (e) => {
@@ -38,13 +47,10 @@ const App = () => {
     if (!enteredNumberIsValid) {
       return;
     }
-    if (wrongNumber) {
+    if (sameNumber) {
       return;
     }
-    if (wrongNumber) {
-      return;
-    }
-
+    console.log(attempts);
     if (attempts !== 1) {
       if (Number(enteredNumber) === randomNumber) {
         setMessageAlert("Congratulations! You got it right!");
@@ -111,14 +117,16 @@ const App = () => {
         <form onSubmit={numberSubmitHandler}>
           <div>
             <label htmlFor="number">Enter a number</label>
-            {wrongNumber && <p>Guess a number inside the range 1-100</p>}
+            <p>Guess a number inside the range 1-100</p>
+
             <input
               type="number"
               onChange={numberChangeHandler}
               onBlur={inputBlurHandler}
               value={enteredNumber}
-              maxLength="3"
+              placeholder={wrongNumber}
             />
+
             {numberInputIsInvalid && <p>Form must not be empty!</p>}
             {sameNumber && (
               <p>You have already entered this number! Try again!</p>
