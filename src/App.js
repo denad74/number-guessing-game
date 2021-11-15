@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import "./App.css";
 import Header from "./components/Header";
 const App = () => {
-  const [randomNumber, setRandomNumber] = useState(
-    Math.ceil(Math.random() * 100)
-  );
+  // const [randomNumber, setRandomNumber] = useState(
+  //   Math.ceil(Math.random() * 100)
+  // );
+
+  const [randomNumber, setRandomNumber] = useState(22);
   let inputNumber = "";
 
   const [enteredNumber, setEnteredNumber] = useState("");
@@ -17,6 +19,7 @@ const App = () => {
   const [styleClass, setStyleClass] = useState("");
   const [isdisable, setIsdisable] = useState(false);
   const [wrongNumber, setWrongNumber] = useState("");
+  const [inputDisable, setInputDisable] = useState(false);
 
   const enteredNumberIsValid = enteredNumber.trim() !== "";
   const numberInputIsInvalid = !enteredNumberIsValid && enteredNumberTouched;
@@ -26,17 +29,53 @@ const App = () => {
 
   const numberChangeHandler = (e) => {
     inputNumber = e.target.value;
-
-    if (inputNumber < 1 || inputNumber > 100) {
+    if (e.target.value.includes(".") || e.target.value.includes("e")) {
+      console.log("ups");
+    } else if (inputNumber < 1 || inputNumber > 100) {
       setWrongNumber("Guess a number inside the range 1-100");
     } else {
       setEnteredNumber(inputNumber);
       setWrongNumber("");
     }
   };
-
+  console.log(inputNumber);
   const inputBlurHandler = (e) => {
     setEnteredNumberTouched(true);
+  };
+
+  const youWin = () => {
+    setMessageAlert("Congratulations! You got it right!");
+    setStyleClass("bg-success");
+    setIsStart(true);
+    setIsOver(true);
+    setIsdisable(true);
+    setEnteredNumber("");
+    setInputDisable(true);
+  };
+
+  const toHight = () => {
+    setMessageAlert("PS! The last guess was too hight!");
+    setStyleClass("bg-denger");
+    setAttempts(attempts - 1);
+    setIsStart(true);
+  };
+
+  const toLow = () => {
+    setMessageAlert("UPS! The last guess was too low");
+    setStyleClass("bg-info");
+    setAttempts(attempts - 1);
+    setIsStart(true);
+  };
+
+  const gameOver = () => {
+    setAttempts(0);
+    setIsOver(true);
+    setMessageAlert("GAME OVER!");
+    setStyleClass("bg-warning");
+    setIsStart(true);
+    setPrevAnswer([]);
+    setIsdisable(true);
+    setInputDisable(true);
   };
 
   const numberSubmitHandler = (e) => {
@@ -50,34 +89,19 @@ const App = () => {
     if (sameNumber) {
       return;
     }
-    console.log(attempts);
-    if (attempts !== 1) {
-      if (Number(enteredNumber) === randomNumber) {
-        setMessageAlert("Congratulations! You got it right!");
-        setStyleClass("bg-success");
-        setIsStart(true);
-        setIsOver(true);
-        setIsdisable(true);
-        setEnteredNumber("");
+
+    console.log(typeof attempts);
+
+    if (attempts > 0) {
+      if (attempts >= 1 && Number(enteredNumber) === randomNumber) {
+        youWin();
+      } else if (attempts === 1 && Number(enteredNumber) !== randomNumber) {
+        gameOver();
       } else if (enteredNumber > randomNumber) {
-        setMessageAlert("PS! The last guess was too high!");
-        setStyleClass("bg-denger");
-        setAttempts(attempts - 1);
-        setIsStart(true);
+        toHight();
       } else if (enteredNumber < randomNumber) {
-        setMessageAlert("UPS! The last guess was too low");
-        setStyleClass("bg-info");
-        setAttempts(attempts - 1);
-        setIsStart(true);
+        toLow();
       }
-    } else {
-      setAttempts(0);
-      setIsOver(true);
-      setMessageAlert("GAME OVER!");
-      setStyleClass("bg-warning");
-      setIsStart(true);
-      setPrevAnswer([]);
-      setIsdisable(true);
     }
     setPrevAnswer([...prevAnswer, enteredNumber]);
     setEnteredNumber("");
@@ -94,6 +118,7 @@ const App = () => {
     setIsdisable(false);
     setEnteredNumber("");
     setMessageAlert("");
+    setInputDisable(false);
   }
 
   function reset() {
@@ -103,6 +128,7 @@ const App = () => {
       setStyleClass("");
       setMessageAlert("");
       setEnteredNumber("");
+      setInputDisable(false);
     }
   }
 
@@ -125,8 +151,10 @@ const App = () => {
               onBlur={inputBlurHandler}
               value={enteredNumber}
               placeholder={wrongNumber}
+              disabled={inputDisable}
             />
 
+            {numberInputIsInvalid && <p>Number must be INTEGER</p>}
             {numberInputIsInvalid && <p>Form must not be empty!</p>}
             {sameNumber && (
               <p>You have already entered this number! Try again!</p>
